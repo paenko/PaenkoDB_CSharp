@@ -25,7 +25,7 @@ namespace PaenkoDB
             List<PaenkoNode> Dead = new List<PaenkoNode>();
             foreach (PaenkoNode pn in checkList)
             {
-                if (!NetworkHandler.CheckAlive(pn.Location))
+                if (!NetworkHandler.CheckAlive(pn.NodeLocation.))
                 {
                     Dead.Add(pn);
                 }
@@ -35,7 +35,7 @@ namespace PaenkoDB
 
         public List<string> GetKeys(PaenkoNode publicNode)
         {
-            string response = NetworkHandler.GET(publicNode.Location, $"document");
+            string response = NetworkHandler.GET(publicNode.NodeLocation.HttpAddress(), $"document");
             List<string> keys = response.Split(';').ToList();
             for (int i = 0; i < keys.Count; i++) keys[i] = keys[i].Split('/').Last();
             keys.Remove(keys.Last());
@@ -43,7 +43,7 @@ namespace PaenkoDB
         }
         public PaenkoResponse GetDocument(PaenkoNode publicNode, string fileID)
         {
-            string response = NetworkHandler.GET(publicNode.Location, $"document/{fileID}");
+            string response = NetworkHandler.GET(publicNode.NodeLocation.HttpAddress(), $"document/{fileID}");
             var doc = JsonConvert.DeserializeObject<PaenkoDocument>(response);
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = response };
             return _return;
@@ -51,7 +51,7 @@ namespace PaenkoDB
 
         public PaenkoResponse DeleteDocument(PaenkoNode publicNode, string fileID)
         {
-            string response = NetworkHandler.DELETE(publicNode.Location, $"document/{fileID}");
+            string response = NetworkHandler.DELETE(publicNode.NodeLocation.HttpAddress(), $"document/{fileID}");
             PaenkoDocument PaenkoDoc = new PaenkoDocument();
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = PaenkoDoc, RAW = response };
             return _return;
@@ -61,8 +61,8 @@ namespace PaenkoDB
         {
             string json = JsonConvert.SerializeObject(doc);
             string resp;
-            if (method == Method.Post) { resp = NetworkHandler.Send(publicNode.Location, $"document", json, "POST"); }
-            else { resp = NetworkHandler.Send(publicNode.Location, $"document", json, "PUT"); }
+            if (method == Method.Post) { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document", json, "POST"); }
+            else { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document", json, "PUT"); }
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = resp }; // Set Document to GET for meta info
             return _return;
         }

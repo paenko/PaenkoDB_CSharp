@@ -9,14 +9,10 @@ namespace PaenkoDB
 {
     public class PaenkoNode
     {
-        public string Location { get; set; }
-        public UInt64 ServerID { get; set; }
-        public string Description { get; set; }
-        public PaenkoNode(string location, UInt64 serverID, string description)
+        public Location NodeLocation { get; set; }
+        public PaenkoNode(string ip, int port, UInt64 serverID)
         {
-            Location = location;
-            ServerID = serverID;
-            Description = description;
+            NodeLocation = Location.Lookup(ip, port);
         }
     }
 }
