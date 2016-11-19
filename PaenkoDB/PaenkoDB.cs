@@ -19,26 +19,11 @@ namespace PaenkoDB
         Random RandomGenerator = new Random();
         public enum Error { ConnectionError, FileError, OK }
         public enum Method { Post, Put }
-        List<PaenkoNode> Nodes = new List<PaenkoNode>();
-        public void ClearNodes()
-        {
-            Nodes.Clear();
-        }
 
-        public void AddNode(PaenkoNode addition)
-        {
-            Nodes.Add(addition);
-        }
-
-        public PaenkoNode RandomNode()
-        {
-            return Nodes.ElementAt(RandomGenerator.Next(0, Nodes.Count));
-        }
-
-        public List<PaenkoNode> CheckNodeStatus()
+        public List<PaenkoNode> CheckNodeStatus(List<PaenkoNode> checkList)
         {
             List<PaenkoNode> Dead = new List<PaenkoNode>();
-            foreach (PaenkoNode pn in Nodes)
+            foreach (PaenkoNode pn in checkList)
             {
                 if (!NetworkHandler.CheckAlive(pn.Location))
                 {
@@ -47,6 +32,7 @@ namespace PaenkoDB
             }
             return Dead;
         }
+
         public List<string> GetKeys(PaenkoNode publicNode)
         {
             string response = NetworkHandler.GET(publicNode.Location, $"document");
