@@ -9,19 +9,25 @@ namespace PaenkoDB
 {
     public class Location
     {
-        public string country_name { get; set; }
-        public string country_code { get; set; }
+        public string country { get; set; }
+        public string countryCode { get; set; }
+        public string region { get; set; }
+        public string regionName { get; set; }
         public string city { get; set; }
+        public string zip { get; set; }
+        public decimal lat { get; set; }
+        public decimal lon { get; set; }
+        public string timezone { get; set; }
         public string ip { get; set; }
+        public string query { get; set; }
         public int HttpPort { get; set; }
-        public decimal Longitude { get; set; }
-        public decimal Latitude { get; set; }
 
         public static Location Lookup(string ip, int port)
         {
-            string json = NetworkHandler.GET("http://api.hostip.info/get_json.php", $"?ip={ip}&position=true");
+            string json = NetworkHandler.GET("http://ip-api.com/json/", ip);
             Location _return = JsonConvert.DeserializeObject<Location>(json);
             _return.HttpPort = port;
+            _return.ip = _return.query;
             return _return;
         }
 

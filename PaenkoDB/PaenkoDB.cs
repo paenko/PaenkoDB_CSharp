@@ -25,7 +25,7 @@ namespace PaenkoDB
             List<PaenkoNode> Dead = new List<PaenkoNode>();
             foreach (PaenkoNode pn in checkList)
             {
-                if (!NetworkHandler.CheckAlive(pn.NodeLocation.))
+                if (!NetworkHandler.CheckAlive(pn.NodeLocation.HttpAddress()))
                 {
                     Dead.Add(pn);
                 }

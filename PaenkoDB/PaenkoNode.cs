@@ -10,7 +10,7 @@ namespace PaenkoDB
     public class PaenkoNode
     {
         public Location NodeLocation { get; set; }
-        public PaenkoNode(string ip, int port, UInt64 serverID)
+        public PaenkoNode(string ip, int port)
         {
             NodeLocation = Location.Lookup(ip, port);
         }
