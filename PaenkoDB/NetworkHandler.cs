@@ -29,15 +29,14 @@ namespace PaenkoDB
             return responseString;
         }
 
-        public static string GET(string ServerUrl, string dataPath)
+        public static string Get(string ServerUrl, string dataPath)
         {
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
             var response = (HttpWebResponse)request.GetResponse();
             var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
             return responseString;
         }
-
-        public static string DELETE(string ServerUrl, string dataPath)
+        public static string Delete(string ServerUrl, string dataPath)
         {
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
             request.Method = "DELETE";
@@ -47,14 +46,50 @@ namespace PaenkoDB
             return responseString;
         }
 
+        public static async Task<string> GetAsync(string ServerUrl, string dataPath)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
+            var response = await Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
+            var responseString = await new StreamReader(response.GetResponseStream()).ReadToEndAsync();
+            return responseString;
+        }
+
+        public static async Task<string> SendAsync(string ServerUrl, string dataPath, string json, string method)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
+            request.Method = method;
+            request.ContentType = "application/json";
+            request.ContentLength = json.Length;
+
+            using (var stream = request.GetRequestStreamAsync())
+            using (var writeStream = new StreamWriter(await stream))
+            {
+                await writeStream.WriteAsync(json);
+            }
+            HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
+
+            var responseString = await new StreamReader(response.GetResponseStream()).ReadToEndAsync();
+            return responseString;
+        }
+
+        public static async Task<string> DeleteAsync(string ServerUrl, string dataPath)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
+            request.Method = "DELETE";
+            request.ContentType = "application/x-www-form-urlencoded";
+            var response = await Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
+            var responseString = await new StreamReader(response.GetResponseStream()).ReadToEndAsync();
+            return responseString;
+        }
+
         static Ping Checker = new Ping();
 
-        public static bool CheckAlive(string location)
+        async public static Task<bool> CheckAliveAsync(string location)
         {
             try
             {
                 Uri u = new Uri(location);
-                PingReply reply = Checker.Send(u.Host);
+                PingReply reply = await Checker.SendPingAsync(u.Host);
                 if (reply.Status == IPStatus.Success)
                 {
                     return true;

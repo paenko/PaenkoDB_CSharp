@@ -19,6 +19,14 @@ namespace PaenkoDB
             byte[] content = FileHandler.ReadFile(filePath);
             return (new PaenkoDocument() { payload = Convert.ToBase64String(content), version = 1 });//, password = pass, username = user } );
         }
+
+        async static public Task<PaenkoDocument> OpenAsync(string filePath, string user, string pass)
+        {
+            byte[] content = await FileHandler.ReadFileAsync(filePath);
+            Task<string> base64Task = Task.Factory.StartNew(() => Convert.ToBase64String(content));
+            return (new PaenkoDocument() { payload = await base64Task, version = 1 });//, password = pass, username = user } );
+        }
+
         static public PaenkoDocument FromContent(string source, string user, string pass)
         {
             byte[] content = Encoding.Default.GetBytes(source);

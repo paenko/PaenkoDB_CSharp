@@ -15,8 +15,8 @@ namespace PaenkoDB
         public string regionName { get; set; }
         public string city { get; set; }
         public string zip { get; set; }
-        public decimal lat { get; set; }
-        public decimal lon { get; set; }
+        public double lat { get; set; }
+        public double lon { get; set; }
         public string timezone { get; set; }
         public string ip { get; set; }
         public string query { get; set; }
@@ -24,10 +24,21 @@ namespace PaenkoDB
 
         public static Location Lookup(string ip, int port)
         {
-            string json = NetworkHandler.GET("http://ip-api.com/json/", ip);
+            string json = NetworkHandler.Get("http://ip-api.com/json/", ip);
             Location _return = JsonConvert.DeserializeObject<Location>(json);
             _return.HttpPort = port;
             _return.ip = _return.query;
+            if (_return.lat == 0 && _return.lon == 0) _return.country = _return.countryCode = _return.city = _return.region = _return.regionName = _return.timezone = _return.zip = "UNKOWN";
+            return _return;
+        }
+
+        async public static Task<Location> LookupAsync(string ip, int port)
+        {
+            string json = await NetworkHandler.GetAsync("http://ip-api.com/json/", ip);
+            Location _return = await Task.Factory.StartNew(()=> JsonConvert.DeserializeObject<Location>(json));
+            _return.HttpPort = port;
+            _return.ip = _return.query;
+            if (_return.lat == 0 && _return.lon == 0) _return.country = _return.countryCode = _return.city = _return.region = _return.regionName = _return.timezone = _return.zip = "UNKOWN";
             return _return;
         }
 
