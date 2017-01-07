@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HealthCheck.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="PaenkoNode.cs" />
     <Compile Include="PaenkoDocument.cs" />

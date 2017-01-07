@@ -38,7 +38,11 @@ namespace PaenkoDB
             Location _return = await Task.Factory.StartNew(()=> JsonConvert.DeserializeObject<Location>(json));
             _return.HttpPort = port;
             _return.ip = _return.query;
-            if (_return.lat == 0 && _return.lon == 0) _return.country = _return.countryCode = _return.city = _return.region = _return.regionName = _return.timezone = _return.zip = "UNKOWN";
+            if (_return.lat == 0 && _return.lon == 0) { _return.country = _return.countryCode = _return.city = _return.region = _return.regionName = _return.timezone = _return.zip = "UNKOWN";
+                _return.lon = 16;
+                _return.lat = 48;
+            }
+
             return _return;
         }
 
