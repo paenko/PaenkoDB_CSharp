@@ -19,6 +19,7 @@ namespace PaenkoDB
         Random RandomGenerator = new Random();
         public enum Error { ConnectionError, FileError, OK }
         public enum Method { Post, Put }
+        public string LogID { get; set; }
 
         async public Task<List<PaenkoNode>> CheckNodeStatusAsync(List<PaenkoNode> checkList)
         {
@@ -33,25 +34,47 @@ namespace PaenkoDB
             return Dead;
         }
 
+        public List<string> GetLogs(PaenkoNode publicNode)
+        {
+            string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"meta/logs");
+            List<string> logs = response.Split('\n').ToList();
+            logs.Remove(logs.First());
+            return logs;
+        }
+
+        async public Task<List<string>> GetLogsAsync(PaenkoNode publicNode)
+        {
+            string response = await NetworkHandler.GetAsync(publicNode.NodeLocation.HttpAddress(), $"meta/logs");
+            return await Task.Factory.StartNew(() =>
+            {
+                var logs = response.Split('\n').ToList();
+                logs.Remove(logs.First());
+                return logs;
+            });
+        }
+
         public List<string> GetKeys(PaenkoNode publicNode)
         {
-            string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"document");
-            List<string> keys = response.Split(';').ToList();
-            for (int i = 0; i < keys.Count; i++) keys[i] = keys[i].Split('/').Last();
-            keys.Remove(keys.Last());
+            string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"meta/log/{LogID}/documents").Replace("Uuid(", "");
+            response = response.Replace(")", "");
+            Console.WriteLine(response);
+            List<string> keys = JsonConvert.DeserializeObject<List<string>>(response);
             return keys;
         }
+
         async public Task<List<string>> GetKeysAsync(PaenkoNode publicNode)
         {
-            string response = await NetworkHandler.GetAsync(publicNode.NodeLocation.HttpAddress(), $"document");
-            List<string> keys = response.Split(';').ToList();
-            for (int i = 0; i < keys.Count; i++) keys[i] = keys[i].Split('/').Last();
-            keys.Remove(keys.Last());
-            return keys;
+            string response = await NetworkHandler.GetAsync(publicNode.NodeLocation.HttpAddress(), $"meta/log/{LogID}/documents");
+            response = response.Replace("Uuid(", "");
+            response = response.Replace(")", "");
+            return await Task.Factory.StartNew(() => {
+                var keys = JsonConvert.DeserializeObject<List<string>>(response);
+                return keys;
+            });
         }
         public PaenkoResponse GetDocument(PaenkoNode publicNode, string fileID)
         {
-            string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"document/{fileID}");
+            string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}/{fileID}");
             var doc = JsonConvert.DeserializeObject<PaenkoDocument>(response);
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = response };
             return _return;
@@ -59,7 +82,7 @@ namespace PaenkoDB
 
         async public Task<PaenkoResponse> GetDocumentAsync(PaenkoNode publicNode, string fileID)
         {
-            string response = await NetworkHandler.GetAsync(publicNode.NodeLocation.HttpAddress(), $"document/{fileID}");
+            string response = await NetworkHandler.GetAsync(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}/{fileID}");
             Task<PaenkoDocument> deSe = Task<PaenkoDocument>.Factory.StartNew(() =>
             {
                 return JsonConvert.DeserializeObject<PaenkoDocument>(response);
@@ -70,7 +93,7 @@ namespace PaenkoDB
 
         public PaenkoResponse DeleteDocument(PaenkoNode publicNode, string fileID)
         {
-            string response = NetworkHandler.Delete(publicNode.NodeLocation.HttpAddress(), $"document/{fileID}");
+            string response = NetworkHandler.Delete(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}/{fileID}");
             PaenkoDocument PaenkoDoc = new PaenkoDocument();
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = PaenkoDoc, RAW = response };
             return _return;
@@ -78,7 +101,7 @@ namespace PaenkoDB
 
         async public Task<PaenkoResponse> DeleteDocumentAsync(PaenkoNode publicNode, string fileID)
         {
-            string response = await NetworkHandler.DeleteAsync(publicNode.NodeLocation.HttpAddress(), $"document/{fileID}");
+            string response = await NetworkHandler.DeleteAsync(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}/{fileID}");
             PaenkoDocument PaenkoDoc = new PaenkoDocument();
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = PaenkoDoc, RAW = response };
             return _return;
@@ -88,8 +111,8 @@ namespace PaenkoDB
         {
             string json = JsonConvert.SerializeObject(doc);
             string resp;
-            if (method == Method.Post) { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document", json, "POST"); }
-            else { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document", json, "PUT"); }
+            if (method == Method.Post) { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "POST"); }
+            else { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "PUT"); }
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = resp }; // Set Document to GET for meta info
             return _return;
         }
@@ -103,8 +126,8 @@ namespace PaenkoDB
                 );
             string resp;
             string json = await jsonTask;
-            if (method == Method.Post) { resp = await NetworkHandler.SendAsync(publicNode.NodeLocation.HttpAddress(), $"document", json, "POST"); }
-            else { resp = await NetworkHandler.SendAsync(publicNode.NodeLocation.HttpAddress(), $"document", json, "PUT"); }
+            if (method == Method.Post) { resp = await NetworkHandler.SendAsync(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "POST"); }
+            else { resp = await NetworkHandler.SendAsync(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "PUT"); }
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = resp }; // Set Document to GET for meta info
             return _return;
         }
