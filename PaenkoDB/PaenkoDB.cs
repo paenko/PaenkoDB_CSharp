@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PaenkoDB
@@ -19,6 +20,7 @@ namespace PaenkoDB
         Random RandomGenerator = new Random();
         public enum Error { ConnectionError, FileError, OK }
         public enum Method { Post, Put }
+        public enum Command { Begin, Commit, Rollback }
         public string LogID { get; set; }
 
         async public Task<List<PaenkoNode>> CheckNodeStatusAsync(List<PaenkoNode> checkList)
@@ -55,8 +57,8 @@ namespace PaenkoDB
 
         public List<string> GetKeys(PaenkoNode publicNode)
         {
-            string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"meta/log/{LogID}/documents").Replace("Uuid(", "");
-            response = response.Replace(")", "");
+            string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"meta/log/{LogID}/documents");
+            response = Regex.Replace(response, "[Uuid()]", String.Empty);
             Console.WriteLine(response);
             List<string> keys = JsonConvert.DeserializeObject<List<string>>(response);
             return keys;
@@ -65,8 +67,7 @@ namespace PaenkoDB
         async public Task<List<string>> GetKeysAsync(PaenkoNode publicNode)
         {
             string response = await NetworkHandler.GetAsync(publicNode.NodeLocation.HttpAddress(), $"meta/log/{LogID}/documents");
-            response = response.Replace("Uuid(", "");
-            response = response.Replace(")", "");
+            response = Regex.Replace(response, "[Uuid()]", String.Empty);
             return await Task.Factory.StartNew(() => {
                 var keys = JsonConvert.DeserializeObject<List<string>>(response);
                 return keys;
@@ -130,6 +131,12 @@ namespace PaenkoDB
             else { resp = await NetworkHandler.SendAsync(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "PUT"); }
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = resp }; // Set Document to GET for meta info
             return _return;
+        }
+
+        public PaenkoResponse Transaction(PaenkoNode publicNode, Command command)
+        {
+            string response = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"transaction/{command.ToString("g").ToLower()}/{LogID}", "", "POST");
+            return new PaenkoResponse() { ErrorMessage = Error.OK, Document = null, RAW = response };
         }
     }
 }

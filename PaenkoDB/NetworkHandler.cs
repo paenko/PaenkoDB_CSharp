@@ -13,6 +13,7 @@ namespace PaenkoDB
     {
         public static string Send(string ServerUrl, string dataPath, string json, string method)
         {
+            Console.WriteLine(string.Format("{0}{1}", ServerUrl, dataPath));
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
             request.Method = method;
             request.ContentType = "application/json";
@@ -74,6 +75,7 @@ namespace PaenkoDB
 
         public static async Task<string> DeleteAsync(string ServerUrl, string dataPath)
         {
+            Console.WriteLine(string.Format("{0}{1}", ServerUrl, dataPath));
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
             request.Method = "DELETE";
             request.ContentType = "application/x-www-form-urlencoded";
