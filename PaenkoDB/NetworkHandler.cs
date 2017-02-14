@@ -40,6 +40,7 @@ namespace PaenkoDB
         }
         public static string Delete(string ServerUrl, string dataPath)
         {
+            Console.WriteLine(string.Format("{0}{1}", ServerUrl, dataPath));
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
             request.Method = "DELETE";
             request.ContentType = "application/x-www-form-urlencoded";

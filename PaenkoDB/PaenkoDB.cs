@@ -61,7 +61,6 @@ namespace PaenkoDB
         public List<string> GetKeys(PaenkoNode publicNode)
         {
             string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"meta/log/{LogID}/documents");
-            response = Regex.Replace(response, "[Uuid()]", String.Empty);
             Console.WriteLine(response);
             List<string> keys = JsonConvert.DeserializeObject<List<string>>(response);
             return keys;
@@ -70,7 +69,6 @@ namespace PaenkoDB
         async public Task<List<string>> GetKeysAsync(PaenkoNode publicNode)
         {
             string response = await NetworkHandler.GetAsync(publicNode.NodeLocation.HttpAddress(), $"meta/log/{LogID}/documents");
-            response = Regex.Replace(response, "[Uuid()]", String.Empty);
             return await Task.Factory.StartNew(() => {
                 var keys = JsonConvert.DeserializeObject<List<string>>(response);
                 return keys;
@@ -111,18 +109,20 @@ namespace PaenkoDB
             return _return;
         }
 
-        public PaenkoResponse PostDocument(PaenkoNode publicNode, PaenkoDocument doc, Method method)
+        public PaenkoResponse PostDocument(PaenkoNode publicNode, PaenkoDocument doc, Method method, string tid="0")
         {
+            string transaction = (tid == "0") ? "" : $"/transaction/{tid}";
             string json = JsonConvert.SerializeObject(doc);
             string resp;
-            if (method == Method.Post) { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "POST"); }
-            else { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "PUT"); }
+            if (method == Method.Post) { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}{transaction}", json, "POST"); }
+            else { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}{transaction}", json, "PUT"); }
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = resp }; // Set Document to GET for meta info
             return _return;
         }
 
-        async public Task<PaenkoResponse> PostDocumentAsync(PaenkoNode publicNode, PaenkoDocument doc, Method method)
-        { 
+        async public Task<PaenkoResponse> PostDocumentAsync(PaenkoNode publicNode, PaenkoDocument doc, Method method, string tid = "0")
+        {
+            string transaction = (tid == "0") ? "" : $"/transaction/{tid}";
             Task<string> jsonTask = Task<string>.Factory.StartNew(
                 () => {
                     return JsonConvert.SerializeObject(doc);
@@ -130,8 +130,8 @@ namespace PaenkoDB
                 );
             string resp;
             string json = await jsonTask;
-            if (method == Method.Post) { resp = await NetworkHandler.SendAsync(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "POST"); }
-            else { resp = await NetworkHandler.SendAsync(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "PUT"); }
+            if (method == Method.Post) { resp = await NetworkHandler.SendAsync(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}{transaction}", json, "POST"); }
+            else { resp = await NetworkHandler.SendAsync(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}{transaction}", json, "PUT"); }
             PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = resp }; // Set Document to GET for meta info
             return _return;
         }
@@ -144,10 +144,8 @@ namespace PaenkoDB
 
         public T GetDocumentAs<T>(PaenkoNode publicNode, string fileID)
         {
-            string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}/{fileID}");
-            var doc = JsonConvert.DeserializeObject<PaenkoDocument>(response);
             T _return;
-            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(doc.payload)))
+            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(GetDocument(publicNode, fileID).Document.payload)))
             {
                 IFormatter f = new BinaryFormatter();
                 _return = (T)f.Deserialize(ms);
@@ -155,7 +153,7 @@ namespace PaenkoDB
             return _return;
         }
 
-        public PaenkoResponse PostDocumentAs<T>(PaenkoNode publicNode, T docobj, Method method)
+        public PaenkoResponse PostDocumentAs<T>(PaenkoNode publicNode, T docobj, Method method, string tid = "0")
         {
             PaenkoDocument doc = new PaenkoDocument() { version = 1 };
             using (MemoryStream ms = new MemoryStream())
@@ -164,12 +162,36 @@ namespace PaenkoDB
                 f.Serialize(ms, docobj);
                 doc.payload = Convert.ToBase64String(ms.ToArray());
             }
-            string json = JsonConvert.SerializeObject(doc);
-            string resp;
-            if (method == Method.Post) { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "POST"); }
-            else { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "PUT"); }
-            PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = resp }; // Set Document to GET for meta info
-            return _return;
+            return PostDocument(publicNode, doc, method, tid);
+        }
+
+        public async Task<T> GetDocumentAsAsync<T>(PaenkoNode publicNode, string fileID)
+        {
+            return await Task.Factory.StartNew(() =>
+            {
+                T _return;
+                using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(GetDocument(publicNode, fileID).Document.payload)))
+                {
+                    IFormatter f = new BinaryFormatter();
+                    _return = (T)f.Deserialize(ms);
+                }
+                return _return;
+            });
+        }
+
+        public async Task<PaenkoResponse> PostDocumentAsAsync<T>(PaenkoNode publicNode, T docobj, Method method, string tid = "0")
+        {
+            PaenkoDocument doc = new PaenkoDocument() { version = 1 };
+            return await Task.Factory.StartNew(() =>
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    IFormatter f = new BinaryFormatter();
+                    f.Serialize(ms, docobj);
+                    doc.payload = Convert.ToBase64String(ms.ToArray());
+                }
+                return PostDocument(publicNode, doc, method, tid);
+            });
         }
     }
 }
