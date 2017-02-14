@@ -32,6 +32,7 @@ namespace PaenkoDB
 
         public static string Get(string ServerUrl, string dataPath)
         {
+            Console.WriteLine(string.Format("{0}{1}", ServerUrl, dataPath));
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
             var response = (HttpWebResponse)request.GetResponse();
             var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();

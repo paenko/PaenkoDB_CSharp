@@ -1,7 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -137,6 +140,36 @@ namespace PaenkoDB
         {
             string response = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"transaction/{command.ToString("g").ToLower()}/{LogID}", "", "POST");
             return new PaenkoResponse() { ErrorMessage = Error.OK, Document = null, RAW = response };
+        }
+
+        public T GetDocumentAs<T>(PaenkoNode publicNode, string fileID)
+        {
+            string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}/{fileID}");
+            var doc = JsonConvert.DeserializeObject<PaenkoDocument>(response);
+            T _return;
+            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(doc.payload)))
+            {
+                IFormatter f = new BinaryFormatter();
+                _return = (T)f.Deserialize(ms);
+            }
+            return _return;
+        }
+
+        public PaenkoResponse PostDocumentAs<T>(PaenkoNode publicNode, T docobj, Method method)
+        {
+            PaenkoDocument doc = new PaenkoDocument() { version = 1 };
+            using (MemoryStream ms = new MemoryStream())
+            {
+                IFormatter f = new BinaryFormatter();
+                f.Serialize(ms, docobj);
+                doc.payload = Convert.ToBase64String(ms.ToArray());
+            }
+            string json = JsonConvert.SerializeObject(doc);
+            string resp;
+            if (method == Method.Post) { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "POST"); }
+            else { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}", json, "PUT"); }
+            PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = resp }; // Set Document to GET for meta info
+            return _return;
         }
     }
 }
