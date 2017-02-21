@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,23 +17,38 @@ namespace PaenkoDB
         //public string username { get; set; }
         //public string password { get; set; }
 
-        static public PaenkoDocument Open(string filePath, string user, string pass)
+        public T ToObject<T>()
         {
-            byte[] content = FileHandler.ReadFile(filePath);
-            return (new PaenkoDocument() { payload = Convert.ToBase64String(content), version = 1 });//, password = pass, username = user } );
+            T _return;
+            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(payload)))
+            {
+                IFormatter f = new BinaryFormatter();
+                _return = (T)f.Deserialize(ms);
+            }
+            return _return;
         }
 
-        async static public Task<PaenkoDocument> OpenAsync(string filePath, string user, string pass)
+        public static PaenkoDocument FromObject<T>(T docobj)
         {
-            byte[] content = await FileHandler.ReadFileAsync(filePath);
-            Task<string> base64Task = Task.Factory.StartNew(() => Convert.ToBase64String(content));
-            return (new PaenkoDocument() { payload = await base64Task, version = 1 });//, password = pass, username = user } );
+            PaenkoDocument doc = new PaenkoDocument() { version = 1 };
+            using (MemoryStream ms = new MemoryStream())
+            {
+                IFormatter f = new BinaryFormatter();
+                f.Serialize(ms, docobj);
+                doc.payload = Convert.ToBase64String(ms.ToArray());
+            }
+            return doc;
         }
 
-        static public PaenkoDocument FromContent(string source, string user, string pass)
+        public static PaenkoDocument FromStream(Stream docstream)
         {
-            byte[] content = Encoding.Default.GetBytes(source);
-            return (new PaenkoDocument() { payload = Convert.ToBase64String(content), version = 1 });//, password = pass, username = user } );
+            PaenkoDocument doc = new PaenkoDocument() { version = 1 };
+            using (MemoryStream ms = new MemoryStream())
+            {
+                docstream.CopyTo(ms);
+                doc.payload = Convert.ToBase64String(ms.ToArray());
+            }
+            return doc;
         }
     }
 }

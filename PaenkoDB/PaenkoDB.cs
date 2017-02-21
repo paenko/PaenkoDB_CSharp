@@ -141,57 +141,5 @@ namespace PaenkoDB
             string response = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"transaction/{command.ToString("g").ToLower()}/{LogID}", "", "POST");
             return new PaenkoResponse() { ErrorMessage = Error.OK, Document = null, RAW = response };
         }
-
-        public T GetDocumentAs<T>(PaenkoNode publicNode, string fileID)
-        {
-            T _return;
-            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(GetDocument(publicNode, fileID).Document.payload)))
-            {
-                IFormatter f = new BinaryFormatter();
-                _return = (T)f.Deserialize(ms);
-            }
-            return _return;
-        }
-
-        public PaenkoResponse PostDocumentAs<T>(PaenkoNode publicNode, T docobj, Method method, string tid = "0")
-        {
-            PaenkoDocument doc = new PaenkoDocument() { version = 1 };
-            using (MemoryStream ms = new MemoryStream())
-            {
-                IFormatter f = new BinaryFormatter();
-                f.Serialize(ms, docobj);
-                doc.payload = Convert.ToBase64String(ms.ToArray());
-            }
-            return PostDocument(publicNode, doc, method, tid);
-        }
-
-        public async Task<T> GetDocumentAsAsync<T>(PaenkoNode publicNode, string fileID)
-        {
-            return await Task.Factory.StartNew(() =>
-            {
-                T _return;
-                using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(GetDocument(publicNode, fileID).Document.payload)))
-                {
-                    IFormatter f = new BinaryFormatter();
-                    _return = (T)f.Deserialize(ms);
-                }
-                return _return;
-            });
-        }
-
-        public async Task<PaenkoResponse> PostDocumentAsAsync<T>(PaenkoNode publicNode, T docobj, Method method, string tid = "0")
-        {
-            PaenkoDocument doc = new PaenkoDocument() { version = 1 };
-            return await Task.Factory.StartNew(() =>
-            {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    IFormatter f = new BinaryFormatter();
-                    f.Serialize(ms, docobj);
-                    doc.payload = Convert.ToBase64String(ms.ToArray());
-                }
-                return PostDocument(publicNode, doc, method, tid);
-            });
-        }
     }
 }

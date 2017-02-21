@@ -51,7 +51,6 @@
     <Compile Include="PaenkoDocument.cs" />
     <Compile Include="PaenkoDB.cs" />
     <Compile Include="NetworkHandler.cs" />
-    <Compile Include="FileHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
