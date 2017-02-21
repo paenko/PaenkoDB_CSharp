@@ -21,9 +21,14 @@ namespace PaenkoDB
     {
         public enum Method { Post, Put }
         public enum Command { Begin, Commit, Rollback }
-        public string LogID { get; set; }
+        static string LogID { get; set; }
 
-        async public Task<List<PaenkoNode>> CheckNodeStatusAsync(List<PaenkoNode> checkList)
+        static void SetLogID(string logid)
+        {
+            LogID = logid;
+        }
+
+        async static public Task<List<PaenkoNode>> CheckNodeStatusAsync(List<PaenkoNode> checkList)
         {
             List<PaenkoNode> Dead = new List<PaenkoNode>();
             foreach (PaenkoNode pn in checkList)
@@ -36,7 +41,7 @@ namespace PaenkoDB
             return Dead;
         }
 
-        public List<string> GetLogs(PaenkoNode publicNode)
+        static public List<string> GetLogs(PaenkoNode publicNode)
         {
             string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"meta/logs");
             List<string> logs = response.Split('\n').ToList();
@@ -44,12 +49,12 @@ namespace PaenkoDB
             return logs;
         }
 
-        async public Task<List<string>> GetLogsAsync(PaenkoNode publicNode)
+        async static public Task<List<string>> GetLogsAsync(PaenkoNode publicNode)
         {
             return await Task.Factory.StartNew<List<string>>(() => GetLogs(publicNode));
         }
 
-        public List<string> GetKeys(PaenkoNode publicNode)
+        static public List<string> GetKeys(PaenkoNode publicNode)
         {
             string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"meta/log/{LogID}/documents");
             Console.WriteLine(response);
@@ -57,11 +62,11 @@ namespace PaenkoDB
             return keys;
         }
 
-        async public Task<List<string>> GetKeysAsync(PaenkoNode publicNode)
+        async static public Task<List<string>> GetKeysAsync(PaenkoNode publicNode)
         {
             return await Task.Factory.StartNew<List<string>>(() => GetKeys(publicNode));
         }
-        public PaenkoResponse GetDocument(PaenkoNode publicNode, string fileID)
+        static public PaenkoResponse GetDocument(PaenkoNode publicNode, string fileID)
         {
             string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}/{fileID}");
             var doc = JsonConvert.DeserializeObject<PaenkoDocument>(response);
@@ -69,12 +74,12 @@ namespace PaenkoDB
             return _return;
         }
 
-        async public Task<PaenkoResponse> GetDocumentAsync(PaenkoNode publicNode, string fileID)
+        async static public Task<PaenkoResponse> GetDocumentAsync(PaenkoNode publicNode, string fileID)
         {
             return await Task.Factory.StartNew<PaenkoResponse>(() => GetDocument(publicNode, fileID));
         }
 
-        public PaenkoResponse DeleteDocument(PaenkoNode publicNode, string fileID)
+        static public PaenkoResponse DeleteDocument(PaenkoNode publicNode, string fileID)
         {
             string response = NetworkHandler.Delete(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}/{fileID}");
             PaenkoDocument PaenkoDoc = new PaenkoDocument();
@@ -82,12 +87,12 @@ namespace PaenkoDB
             return _return;
         }
 
-        async public Task<PaenkoResponse> DeleteDocumentAsync(PaenkoNode publicNode, string fileID)
+        async static public Task<PaenkoResponse> DeleteDocumentAsync(PaenkoNode publicNode, string fileID)
         {
             return await Task.Factory.StartNew<PaenkoResponse>(() => DeleteDocument(publicNode, fileID));
         }
 
-        public PaenkoResponse PostDocument(PaenkoNode publicNode, PaenkoDocument doc, Method method, string tid="0")
+        static public PaenkoResponse PostDocument(PaenkoNode publicNode, PaenkoDocument doc, Method method, string tid="0")
         {
             string transaction = (tid == "0") ? "" : $"/transaction/{tid}";
             string json = JsonConvert.SerializeObject(doc);
@@ -98,12 +103,12 @@ namespace PaenkoDB
             return _return;
         }
 
-        async public Task<PaenkoResponse> PostDocumentAsync(PaenkoNode publicNode, PaenkoDocument doc, Method method, string tid = "0")
+        async static public Task<PaenkoResponse> PostDocumentAsync(PaenkoNode publicNode, PaenkoDocument doc, Method method, string tid = "0")
         {
             return await Task.Factory.StartNew<PaenkoResponse>(() => PostDocument(publicNode, doc, method, tid));
         }
 
-        public PaenkoResponse Transaction(PaenkoNode publicNode, Command command)
+        static public PaenkoResponse Transaction(PaenkoNode publicNode, Command command)
         {
             string response = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"transaction/{command.ToString("g").ToLower()}/{LogID}", "", "POST");
             return new PaenkoResponse() { Document = null, RAW = response };
