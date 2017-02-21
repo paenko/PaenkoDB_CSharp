@@ -14,14 +14,11 @@ namespace PaenkoDB
     public class PaenkoResponse
     {
         public PaenkoDocument Document { get; set; }
-        public PaenkoDB.Error ErrorMessage { get; set; }
         public string RAW { get; set; }
     }
 
     public class PaenkoDB
     {
-        Random RandomGenerator = new Random();
-        public enum Error { ConnectionError, FileError, OK }
         public enum Method { Post, Put }
         public enum Command { Begin, Commit, Rollback }
         public string LogID { get; set; }
@@ -68,7 +65,7 @@ namespace PaenkoDB
         {
             string response = NetworkHandler.Get(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}/{fileID}");
             var doc = JsonConvert.DeserializeObject<PaenkoDocument>(response);
-            PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = response };
+            PaenkoResponse _return = new PaenkoResponse() { Document = doc, RAW = response };
             return _return;
         }
 
@@ -81,7 +78,7 @@ namespace PaenkoDB
         {
             string response = NetworkHandler.Delete(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}/{fileID}");
             PaenkoDocument PaenkoDoc = new PaenkoDocument();
-            PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = PaenkoDoc, RAW = response };
+            PaenkoResponse _return = new PaenkoResponse() { Document = PaenkoDoc, RAW = response };
             return _return;
         }
 
@@ -97,7 +94,7 @@ namespace PaenkoDB
             string resp;
             if (method == Method.Post) { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}{transaction}", json, "POST"); }
             else { resp = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"document/{LogID}{transaction}", json, "PUT"); }
-            PaenkoResponse _return = new PaenkoResponse() { ErrorMessage = Error.OK, Document = doc, RAW = resp }; // Set Document to GET for meta info
+            PaenkoResponse _return = new PaenkoResponse() { Document = doc, RAW = resp }; // Set Document to GET for meta info
             return _return;
         }
 
@@ -109,7 +106,7 @@ namespace PaenkoDB
         public PaenkoResponse Transaction(PaenkoNode publicNode, Command command)
         {
             string response = NetworkHandler.Send(publicNode.NodeLocation.HttpAddress(), $"transaction/{command.ToString("g").ToLower()}/{LogID}", "", "POST");
-            return new PaenkoResponse() { ErrorMessage = Error.OK, Document = null, RAW = response };
+            return new PaenkoResponse() { Document = null, RAW = response };
         }
     }
 }
