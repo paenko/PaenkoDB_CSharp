@@ -45,13 +45,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authentication.cs" />
     <Compile Include="HealthCheck.cs" />
     <Compile Include="Location.cs" />
-    <Compile Include="PaenkoNode.cs" />
-    <Compile Include="PaenkoDocument.cs" />
-    <Compile Include="PaenkoDB.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="Document.cs" />
     <Compile Include="NetworkHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UuidManager.cs" />
+    <Compile Include="UuidObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

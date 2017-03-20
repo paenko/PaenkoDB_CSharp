@@ -9,13 +9,11 @@ using System.Threading.Tasks;
 
 namespace PaenkoDB
 {
-    public class PaenkoDocument
+    public class Document
     {
         public string payload { get; set; }
         public uint version { get; set; }
         public string id { get; set; }
-        //public string username { get; set; }
-        //public string password { get; set; }
 
         public T ToObject<T>()
         {
@@ -28,9 +26,9 @@ namespace PaenkoDB
             return _return;
         }
 
-        public static PaenkoDocument FromObject<T>(T docobj)
+        public static Document FromObject<T>(T docobj)
         {
-            PaenkoDocument doc = new PaenkoDocument() { version = 1 };
+            Document doc = new Document() { version = 1 };
             using (MemoryStream ms = new MemoryStream())
             {
                 IFormatter f = new BinaryFormatter();
@@ -40,9 +38,9 @@ namespace PaenkoDB
             return doc;
         }
 
-        public static PaenkoDocument FromStream(Stream docstream)
+        public static Document FromStream(Stream docstream)
         {
-            PaenkoDocument doc = new PaenkoDocument() { version = 1 };
+            Document doc = new Document() { version = 1 };
             using (MemoryStream ms = new MemoryStream())
             {
                 docstream.CopyTo(ms);

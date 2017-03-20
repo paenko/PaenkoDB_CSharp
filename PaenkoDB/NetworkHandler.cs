@@ -11,10 +11,12 @@ namespace PaenkoDB
 {
     public class NetworkHandler
     {
+        static CookieContainer CookieJar = new CookieContainer();
         public static string Send(string ServerUrl, string dataPath, string json, string method)
         {
             Console.WriteLine(string.Format("{0}{1}", ServerUrl, dataPath));
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
+            request.CookieContainer = CookieJar;
             request.Method = method;
             request.ContentType = "application/json";
             request.ContentLength = json.Length;
@@ -34,6 +36,7 @@ namespace PaenkoDB
         {
             Console.WriteLine(string.Format("{0}{1}", ServerUrl, dataPath));
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
+            request.CookieContainer = CookieJar;
             var response = (HttpWebResponse)request.GetResponse();
             var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
             return responseString;
@@ -42,6 +45,7 @@ namespace PaenkoDB
         {
             Console.WriteLine(string.Format("{0}{1}", ServerUrl, dataPath));
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
+            request.CookieContainer = CookieJar;
             request.Method = "DELETE";
             request.ContentType = "application/x-www-form-urlencoded";
             var response = (HttpWebResponse)request.GetResponse();
@@ -52,6 +56,7 @@ namespace PaenkoDB
         public static async Task<string> GetAsync(string ServerUrl, string dataPath)
         {
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
+            request.CookieContainer = CookieJar;
             var response = await Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
             var responseString = await new StreamReader(response.GetResponseStream()).ReadToEndAsync();
             return responseString;
@@ -60,6 +65,7 @@ namespace PaenkoDB
         public static async Task<string> SendAsync(string ServerUrl, string dataPath, string json, string method)
         {
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
+            request.CookieContainer = CookieJar;
             request.Method = method;
             request.ContentType = "application/json";
             request.ContentLength = json.Length;
@@ -79,6 +85,7 @@ namespace PaenkoDB
         {
             Console.WriteLine(string.Format("{0}{1}", ServerUrl, dataPath));
             var request = (HttpWebRequest)WebRequest.Create(string.Format("{0}{1}", ServerUrl, dataPath));
+            request.CookieContainer = CookieJar;
             request.Method = "DELETE";
             request.ContentType = "application/x-www-form-urlencoded";
             var response = await Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
