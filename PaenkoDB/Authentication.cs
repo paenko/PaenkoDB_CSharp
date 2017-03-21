@@ -10,5 +10,11 @@ namespace PaenkoDB
     {
         public string username { get; set; }
         public string password { get; set; }
+
+        public Authentication(string username, string password)
+        {
+            this.username = username;
+            this.password = password;
+        }
     }
 }

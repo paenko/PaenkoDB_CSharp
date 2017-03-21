@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PaenkoDB
 {
-    static class UuidManager
+    static public class UuidManager
     {
         static List<UuidObject> DBUuids = new List<UuidObject>();
 
@@ -31,7 +31,7 @@ namespace PaenkoDB
             }
         }
 
-        public static void SaveKeys(string file)
+        public static void SaveIds(string file)
         {
             using (FileStream fs = new FileStream(file, FileMode.Create))
             using (StreamWriter sw = new StreamWriter(fs))
@@ -43,23 +43,35 @@ namespace PaenkoDB
 
         public static void Add(string id, string description, UuidObject.UuidType type)
         {
-            if(DBUuids.Where(u => u.Id == id).Count() == 0)
+            if (DBUuids.Where(u => { if (u.Id == id || u.Description == description) { return true; } else { return false; } }).Count() == 0)
             DBUuids.Add(new UuidObject() { Description = description, Id = id, Type = type });
         }
 
         public static UuidObject LookForId(string description)
         {
-            return DBUuids.Where(u => { if (u.Description == description) { return true; } else { return false; } }).First();
+            var x = DBUuids.Where(u => { if (u.Description == description) { return true; } else { return false; } }).ToList();
+            if (x.Count != 0)
+            { return x.First(); }
+            else
+            { return null; }
         }
 
         public static UuidObject LookForDescription(string id)
         {
-            return DBUuids.Where(u => { if (u.Id == id) { return true; } else { return false; } }).First();
+            var x = DBUuids.Where(u => { if (u.Id == id) { return true; } else { return false; } }).ToList();
+            if (x.Count != 0)
+            { return x.First(); }
+            else
+            { return null; }
         }
 
         public static List<UuidObject> LookAll(UuidObject.UuidType type = UuidObject.UuidType.All)
         {
-            return DBUuids.Where(u => { if (u.Type == type) { return true; } else { return false; } }).ToList();
+            var x = DBUuids.Where(u => { if (u.Type == type | type == UuidObject.UuidType.All) { return true; } else { return false; } }).ToList();
+            if (x.Count != 0)
+            { return x; }
+            else
+            { return null; }
         }
     }
 }

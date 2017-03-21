@@ -13,17 +13,17 @@ namespace PaenkoDB
         public Location NodeLocation { get; set; }
         public enum Method { Post, Put }
         public enum Command { Begin, Commit, Rollback }
-        public string CurrentTransaction { get; set; }
+        public string CurrentTransaction { get; set; } = "NONE";
 
-        public Node(string ip, int port, bool lookup = false)
+        public Node(IPAddress ip, int port, bool lookup = false)
         {
             if (lookup)
             {
-                NodeLocation = Location.Lookup(ip, port);
+                NodeLocation = Location.Lookup(ip.ToString(), port);
             }
             else
             {
-                NodeLocation = new Location() { ip = ip, HttpPort = port };
+                NodeLocation = new Location() { ip = ip.ToString(), HttpPort = port };
             }
         }
 
