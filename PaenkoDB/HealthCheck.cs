@@ -13,6 +13,11 @@ namespace PaenkoDB
         static Action<List<Node>> TimerElapsedCallback;
         static List<Node> TimerElapsedToCheck;
 
+        /// <summary>
+        /// Check the availability of a list of nodes
+        /// </summary>
+        /// <param name="toCheck">The node list that will be checked</param>
+        /// <returns>All nodes that are available</returns>
         public async static Task<List<Node>> CheckHealth(List<Node> toCheck)
         {
             List<Node> Alive = new List<Node>();
@@ -22,7 +27,12 @@ namespace PaenkoDB
             }
             return Alive;
         }
-
+        /// <summary>
+        /// Check node status in a specified interval
+        /// </summary>
+        /// <param name="toCheck">The node list that will be checked</param>
+        /// <param name="callback">A callback that will fire after each interval. It has the available nodes as parameter</param>
+        /// <param name="intervalInSeconds">The interval in wich the checks will be performed</param>
         public static void SetTimedCheck(List<Node> toCheck, Action<List<Node>> callback, int intervalInSeconds)
         {
             TimerElapsedCallback = callback;

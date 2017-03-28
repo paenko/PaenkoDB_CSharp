@@ -15,6 +15,11 @@ namespace PaenkoDB
         public uint version { get; set; }
         public string id { get; set; }
 
+        /// <summary>
+        /// Deserialize a document to an object
+        /// </summary>
+        /// <typeparam name="T">The type of the object you want to deserialize</typeparam>
+        /// <returns>The deserialized object</returns>
         public T ToObject<T>()
         {
             T _return;
@@ -26,6 +31,11 @@ namespace PaenkoDB
             return _return;
         }
 
+        /// <summary>
+        /// Create a document from the serialization of an object
+        /// </summary>
+        /// <typeparam name="T">The type of the object you want to serialize</typeparam>
+        /// <returns>A Document with the serialization as payload</returns>
         public static Document FromObject<T>(T docobj)
         {
             Document doc = new Document() { version = 1 };
@@ -38,6 +48,11 @@ namespace PaenkoDB
             return doc;
         }
 
+        /// <summary>
+        /// Create a document from a stream
+        /// </summary>
+        /// <param name="docstream">The stream which will be used to create the document</param>
+        /// <returns>A Document</returns>
         public static Document FromStream(Stream docstream)
         {
             Document doc = new Document() { version = 1 };
