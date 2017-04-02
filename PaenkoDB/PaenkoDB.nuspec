@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Paenko.PaenkoDb</id>
+    <version>1.0</version>
+    <title>PaenkoDb</title>
+    <authors>FHanko</authors>
+    <owners>FHanko</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Paenko Database C# driver</description>
+    <releaseNotes>Nuget release</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>Database Paenko</tags>
+  </metadata>
+  <files>
+     <file src="bin\Release\PaenkoDB.dll" target="lib\PaenkoDB.dll" />
+     <file src="bin\Release\Newtonsoft.Json.dll" target="lib\Newtonsoft.Json.dll" />
+ </files>
+</package>

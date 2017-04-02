@@ -1,6 +1,11 @@
 # PaenkoDB_CSharpLib
 CSharp Library that implements communication with the PaenkoDB REST interface
 
+To include this library in your project download it with Nuget.
+https://www.nuget.org/packages/Paenko.PaenkoDb/1.0.0
+
+Example usage:
+
 ~~~csharp
 static void Main(string[] args)
         {
